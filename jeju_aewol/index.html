@@ -6,8 +6,8 @@
     <title>도토리 애월점 정산기</title>
 
     <!-- 📱 원본 PNG 이미지를 완벽하게 반영한 파비콘 및 모바일 앱 아이콘 -->
-    <link rel="icon" type="image/png" href="https://github.com/masher0093-collab/dotori_calculator/blob/main/jeju_aewol/Image/DOTORI_Aweol.png">
-    <link rel="apple-touch-icon" href="https://github.com/masher0093-collab/dotori_calculator/blob/main/jeju_aewol/Image/DOTORI_Aweol.png">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/masher0093-collab/DOTORI_Aewol.html/main/DOTORI_Aweol.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/masher0093-collab/DOTORI_Aewol.html/main/DOTORI_Aweol.png">
 
     <style>
         * {
@@ -913,3 +913,109 @@
                 input.parentElement.querySelector('.amount-display').textContent = amount.toLocaleString() + '원';
                 totalCash += amount;
             });
+            document.getElementById('total-cash-calc').textContent = totalCash.toLocaleString() + '원';
+            document.getElementById('cash-total-display').textContent = totalCash.toLocaleString();
+
+            // 2. 카드 및 현금 매출 (시제 400,000원 고정)
+            const sije = 400000;
+            const netCashSales = totalCash - sije;
+            const netCashSalesEl = document.getElementById('net-cash-sales');
+            netCashSalesEl.textContent = netCashSales.toLocaleString();
+
+            if (netCashSales < 0) {
+                netCashSalesEl.style.color = '#f87171';
+            } else {
+                netCashSalesEl.style.color = '#3a86ef';
+            }
+
+            const cardSales = getNumericVal('#card-sales-input');
+            const grandTotalSales = netCashSales + cardSales;
+            document.getElementById('grand-total-sales').textContent = grandTotalSales.toLocaleString() + '원';
+
+            // 3. 액자 수량
+            let total10000 = 0;
+            let total17000 = 0;
+            let a1Cnt = 0, a2Cnt = 0, a3Cnt = 0;
+
+            const frameInputs = document.querySelectorAll('.frame-input');
+            frameInputs.forEach(input => {
+                const count = getNumericVal(input);
+                const price = parseInt(input.getAttribute('data-price'));
+                const author = input.getAttribute('data-author');
+
+                if (price === 10000) total10000 += count * price;
+                if (price === 17000) total17000 += count * price;
+
+                if (author === '1') a1Cnt += count;
+                if (author === '2') a2Cnt += count;
+                if (author === '3') a3Cnt += count;
+            });
+
+            document.getElementById('frame-10000-total').textContent = total10000.toLocaleString();
+            document.getElementById('frame-17000-total').textContent = total17000.toLocaleString();
+
+            document.getElementById('author1-total-cnt').textContent = a1Cnt;
+            document.getElementById('author2-total-cnt').textContent = a2Cnt;
+            document.getElementById('author3-total-cnt').textContent = a3Cnt;
+
+            document.getElementById('author1-subsidy').textContent = (a1Cnt * 1500).toLocaleString();
+            document.getElementById('author2-subsidy').textContent = (a2Cnt * 1500).toLocaleString();
+            document.getElementById('author3-subsidy').textContent = (a3Cnt * 1500).toLocaleString();
+
+            const frameGrandTotal = total10000 + total17000;
+            document.getElementById('frame-grand-total').textContent = frameGrandTotal.toLocaleString();
+
+            // 4. 작가별 인원수
+            let totalHeadcount = 0;
+            const headInputs = document.querySelectorAll('.author-headcount');
+            headInputs.forEach(input => {
+                totalHeadcount += getNumericVal(input);
+            });
+            document.getElementById('total-headcount').textContent = totalHeadcount;
+            const headcountAmount = totalHeadcount * 7000;
+            document.getElementById('total-headcount-amount').textContent = headcountAmount.toLocaleString() + '원';
+
+            // 5. 기타 항목
+            const postcardAmount = getNumericVal('#etc-postcard-input');
+
+            // 6. 차액 계산
+            const expectedSales = headcountAmount + frameGrandTotal + postcardAmount;
+            const difference = grandTotalSales - expectedSales;
+
+            const diffContainer = document.getElementById('diff-container');
+            const diffAmountSpan = document.getElementById('diff-amount');
+
+            diffAmountSpan.textContent = difference.toLocaleString() + '원';
+
+            diffContainer.classList.remove('negative');
+            if (difference < 0) {
+                diffContainer.classList.add('negative');
+            }
+        }
+
+        function confirmReset() {
+            if (confirm("정말 초기화 하시겠습니까?")) {
+                const numInputs = document.querySelectorAll('.num-input');
+                numInputs.forEach(input => {
+                    input.value = '0';
+                    updateInputColor(input);
+                });
+
+                const currencyInputs = document.querySelectorAll('.currency-input');
+                currencyInputs.forEach(input => {
+                    input.value = '0 원';
+                    input.style.color = '#adb5bd';
+                });
+
+                calculateAll();
+            }
+        }
+
+        window.onload = function() {
+            setupNumberInputs();
+            setupCurrencyInputs();
+            calculateAll();
+        };
+    </script>
+</body>
+</html>
